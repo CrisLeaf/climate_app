@@ -1,0 +1,6 @@
+.idea/
+*.pyc
+temperature/__pycache__
+_test.py
+.streamlit/
+temperature/geckodriver.log
