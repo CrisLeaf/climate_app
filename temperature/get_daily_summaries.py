@@ -69,8 +69,8 @@ def insert_data_into_psql(city, country):
 			"SELECT city_id FROM cities WHERE city = %s AND country = %s", (city, country)
 		)
 		city_id = curr.fetchall()[0][0]
-		print(f"{(city, country)} added to database.")
-		print("Downloading data...")
+		print(f"{(city, country)} agregado a la base de datos.")
+		print("Descargando datos...")
 		data = get_data(city, country)
 		if data == None:
 			return
@@ -82,17 +82,17 @@ def insert_data_into_psql(city, country):
 					VALUES (%s, %s, %s, %s, %s)""",
 					(city_id, row[0], row[1], clean_float(row[2]), clean_float(row[3]))
 				)
-		print("Data added successfully!")
+		print("Datos agregados satisfactoriamente!")
 	else:
-		print(f"{(city, country)} already exists on database.")
+		print(f"{(city, country)} ya existe en la base de datos.")
 		curr.execute(
 			"SELECT city_id FROM cities WHERE city = %s AND country = %s", (city, country)
 		)
 		city_id = curr.fetchall()[0][0]
 		while True:
-			redownload = input("Do you want to re-download dataset?[y/n]:").lower()
+			redownload = input("Quieres descargar los datos nuevamente?[y/n]:").lower()
 			if redownload == "y":
-				print("Downloading data...")
+				print("Descargando datos...")
 				data = get_data(city, country)
 				if data == None:
 					return
@@ -107,7 +107,7 @@ def insert_data_into_psql(city, country):
 							)
 						except:
 							pass
-				print("Data added successfully!")
+				print("Datos agregados satisfactoriamente!")
 				break
 			elif redownload == "n":
 				break
@@ -118,7 +118,7 @@ def insert_data_into_psql(city, country):
 
 
 if __name__ == "__main__":
-	city = input("Enter City:").lower()
-	country = input("Enter Country:").lower()
+	city = input("Ingrese la ciudad:").lower()
+	country = input("Ingrese el país:").lower()
 	insert_data_into_psql(city, country)
 	

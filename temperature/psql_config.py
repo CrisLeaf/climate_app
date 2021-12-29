@@ -1,5 +1,6 @@
 import os
 
+
 psql_params = {
 	"host": os.environ["CLIMATE_DATABASE_HOST"],
 	"port": os.environ["CLIMATE_DATABASE_PORT"],

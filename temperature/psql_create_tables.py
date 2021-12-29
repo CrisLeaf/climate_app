@@ -37,7 +37,7 @@ curr = conn.cursor()
 for command in commands:
 	curr.execute(command)
 
-print("Base de datos inicializada!")
+print("Base de datos creada!")
 
 conn.commit()
 curr.close()
