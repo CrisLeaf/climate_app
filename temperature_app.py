@@ -92,8 +92,7 @@ def get_graphics(city, country):
 	st.write(fig4)
 	
 	# Predicciones
-	html_title4 = """<h3 style="text-align:center;">Predicción de Temperatura (
-			Moving Average)</h3>"""
+	html_title4 = """<h3 style="text-align:center;">Apendizaje Automático</h3>"""
 	st.markdown(html_title4, unsafe_allow_html=True)
 	
 	monthly_df["tmax_diff"] = monthly_df["Max. Temperature"].diff(1)
@@ -103,18 +102,24 @@ def get_graphics(city, country):
 	monthly_df.dropna(inplace=True)
 	
 	## tmax
+	st.write("Entrenamos un modelo de Regresión Lineal para la temperatura máxima mensual, "
+			 "y obtenemos la siguiente tendencia:")
+	reg_fig1 = px.scatter(yearly_df["Max. Temperature"], trendline="ols")
+	st.write(reg_fig1)
+	
 	tmax_model = AutoReg(monthly_df["tmax_diff"], lags=12)
 	tmax_model_fit = tmax_model.fit()
 	tmax_residuals = tmax_model_fit.resid
 	tmax_res_fig = px.scatter(tmax_residuals,
 							  labels={"value": "Temperatura (°K)", "Date": "Año"})
-	st.write("Residuales del entreno del modelo de temperatura máxima mensual:")
+	st.write("Ahora, entrenamos un modelo de Series de Tiempo para la temperatura máxima mensual, "
+			 "y obtenemos los siguientes residuales:")
 	st.write(tmax_res_fig)
 	
 	tmax_resid = tmax_model_fit.predict().dropna()
 	ma_tmax_predictions = monthly_df["tmax_lag"].iloc[12:] + tmax_resid
 	tmax_mae = mean_absolute_error(monthly_df["Max. Temperature"].iloc[12:], ma_tmax_predictions)
-	st.write(f"Promedio de Error Absoluto Mensual:", tmax_mae)
+	st.write(f"Promedio de Error Absoluto Mensual:", round(tmax_mae, 2))
 	
 	st.write("Predicción Anual en el conjunto de entrenamiento:")
 	yearly_df = monthly_df.iloc[12:].groupby(pd.Grouper(freq="Y")).mean()
@@ -126,18 +131,24 @@ def get_graphics(city, country):
 	st.write(tmax_pred_fig)
 	
 	## tmin
+	st.write("Entrenamos un modelo de Regresión Lineal para la temperatura mínima mensual, "
+			 "y obtenemos la siguiente tendencia:")
+	reg_fig2 = px.scatter(yearly_df["Min. Temperature"], trendline="ols")
+	st.write(reg_fig2)
+	
 	tmin_model = AutoReg(monthly_df["tmin_diff"], lags=12)
 	tmin_model_fit = tmin_model.fit()
 	tmin_residuals = tmin_model_fit.resid
 	tmin_res_fig = px.scatter(tmin_residuals,
 							  labels={"value": "Temperatura (°K)", "Date": "Año"})
-	st.write("Residuales del entreno del modelo de temperatura mínima mensual:")
+	st.write("Ahora, entrenamos un modelo de Series de Tiempo para la temperatura mínima mensual, "
+			 "y obtenemos los siguientes residuales:")
 	st.write(tmin_res_fig)
 	
 	tmin_resid = tmin_model_fit.predict().dropna()
 	ma_tmin_predictions = monthly_df["tmin_lag"].iloc[12:] + tmin_resid
 	tmin_mae = mean_absolute_error(monthly_df["Min. Temperature"].iloc[12:], ma_tmin_predictions)
-	st.write(f"Promedio de Error Absoluto Mensual:", tmin_mae)
+	st.write(f"Promedio de Error Absoluto Mensual:", round(tmin_mae, 2))
 	
 	st.write("Predicción Anual en el conjunto de entrenamiento:")
 	yearly_df = monthly_df.iloc[12:].groupby(pd.Grouper(freq="Y")).mean()
