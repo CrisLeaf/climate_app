@@ -36,8 +36,6 @@ st.markdown(html_header, unsafe_allow_html=True)
 city = st.text_input("Ciudad:", placeholder="Ingrese la ciudad... (ex: New York)").lower()
 country = st.text_input("País:", placeholder="Ingrese el país... (ex: United States)").lower()
 
-sarimax_iterations = 100
-
 def get_graphics(city, country):
 	# PSQL
 	conn = psycopg2.connect(**psql_params)
@@ -193,17 +191,12 @@ if obtener_btn.button("Obtener"):
 	
 	if data_exists(city, country):
 		get_graphics(city, country)
-		html_source_code = """
-				<p class="source-code">Código Fuente:
-				<a href="https://github.com/CrisLeaf/ny_is_burning/blob/master/temperature_analysis.ipynb">
-				<i class="fab fa-github"></i></a></p>
-				<style>
-					.source-code {
-						text-align: right;
-					}
-				</style>
-			"""
-		st.markdown(html_source_code, unsafe_allow_html=True)
+		more_info_html = """
+					<a class="aqui" href="https://github.com/CrisLeaf/ny_is_burning/blob/master/temperature_analysis.ipynb">
+					Más información
+					</a>
+				"""
+		st.markdown(more_info_html, unsafe_allow_html=True)
 	else:
 		st.write("Obteniendo datos...")
 		try:
@@ -216,3 +209,15 @@ if obtener_btn.button("Obtener"):
 			st.write(
 				"https://www.ncei.noaa.gov/access/search/dataset-search?text=daily%20summaries"
 			)
+
+html_source_code = """
+				<p class="source-code">Código Fuente:
+				<a href="https://github.com/CrisLeaf/temperature_app">
+				<i class="fab fa-github"></i></a></p>
+				<style>
+					.source-code {
+						text-align: right;
+					}
+				</style>
+			"""
+st.markdown(html_source_code, unsafe_allow_html=True)
