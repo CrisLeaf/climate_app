@@ -45,6 +45,9 @@ def get_graphics(city, country):
 	curr.execute("SELECT * FROM temperatures where city_id = %s", (city_id,))
 	df = pd.DataFrame(curr.fetchall())[[3, 4, 5]]
 	df.columns = ["Date", "Max. Temperature", "Min. Temperature"]
+	df.dropna(inplace=True)
+	df.drop(index=df[df["Max. Temperature"] == 0].index, inplace=True)
+	df.drop(index=df[df["Min. Temperature"] == 0].index, inplace=True)
 	df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
 	df.set_index("Date", inplace=True)
 	df["Max. Temperature"] = df["Max. Temperature"].apply(lambda x: int(x))
@@ -190,34 +193,50 @@ if obtener_btn.button("Obtener"):
 	ss.obtener_btn = True
 	
 	if data_exists(city, country):
-		get_graphics(city, country)
+		try:
+			get_graphics(city, country)
+		except:
+			st.error(f"Ha habido un error al procesar los datos de {city.capitalize()}, "
+					 f"{country.capitalize()}. Las posibles causas son: Los datos no están "
+					 f"disponibles, están incompletos o son incoherentes.")
 		more_info_html = """
-					<a class="aqui" href="https://github.com/CrisLeaf/ny_is_burning/blob/master/temperature_analysis.ipynb">
-					Más información
-					</a>
-				"""
+			<a class="aqui" href="https://github.com/CrisLeaf/ny_is_burning/blob/master/temperature_analysis.ipynb">
+			Más información
+			</a>
+		"""
 		st.markdown(more_info_html, unsafe_allow_html=True)
 	else:
 		st.write("Obteniendo datos...")
-		try:
-			new_data = download_data(city, country)
-			insert_into_psql(city, country, new_data)
-			get_graphics(city, country)
-		except:
-			st.write(f"{city.capitalize()}, {country.capitalize()} no se encuentra disponible.\n"
-					 f"Para más información visite")
-			st.write(
-				"https://www.ncei.noaa.gov/access/search/dataset-search?text=daily%20summaries"
+		new_data = download_data(city, country)
+		if new_data is None:
+			st.error(
+				f"{city.capitalize()}, {country.capitalize()} no se encuentra disponible. "
+				f"Para más información visite "
+				f"https://www.ncei.noaa.gov/access/search/dataset-search?text=daily%20summaries"
 			)
+		else:
+			try:
+				insert_into_psql(city, country, new_data)
+				get_graphics(city, country)
+			except:
+				st.error(f"Ha habido un error al procesar los datos de {city.capitalize()}, "
+						 f"{country.capitalize()}. Las posibles causas son: Los datos no están "
+						 f"disponibles, están incompletos o son incoherentes.")
+			more_info_html = """
+				<a class="aqui" href="https://github.com/CrisLeaf/ny_is_burning/blob/master/temperature_analysis.ipynb">
+				Más información
+				</a>
+			"""
+			st.markdown(more_info_html, unsafe_allow_html=True)
 
 html_source_code = """
-				<p class="source-code">Código Fuente:
-				<a href="https://github.com/CrisLeaf/temperature_app">
-				<i class="fab fa-github"></i></a></p>
-				<style>
-					.source-code {
-						text-align: right;
-					}
-				</style>
-			"""
+	<p class="source-code">Código Fuente:
+	<a href="https://github.com/CrisLeaf/temperature_app">
+	<i class="fab fa-github"></i></a></p>
+	<style>
+		.source-code {
+			text-align: right;
+		}
+	</style>
+"""
 st.markdown(html_source_code, unsafe_allow_html=True)

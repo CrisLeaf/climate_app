@@ -29,14 +29,17 @@ def download_data(city, country):
 	time.sleep(2)
 	html = browser.page_source
 	browser.close()
-	station = re.findall(r"[A-Z]*[0-9]*.csv", html)[0]
-	station = re.findall(r"[A-Z]*[0-9]*", station)[0]
+	try:
+		station = re.findall(r"[A-Z]*[0-9]*.csv", html)[0]
+		station = re.findall(r"[A-Z]*[0-9]*", station)[0]
+	except:
+		return None
 	params = {
 		"dataset_name": "daily-summaries",
 		"data_types": "TMAX, TMIN",
 		"stations": station,
 		"start_date_time": "1800-12-20",
-		"end_date_time": "2022-12-31",
+		"end_date_time": "2030-12-31",
 		"location": "90,-180,-90,180"
 	}
 	ncei_data = NCEIData(**params)
