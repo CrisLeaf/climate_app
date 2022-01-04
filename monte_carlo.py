@@ -1,13 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set_style("darkgrid")
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error
 
 
-# Monte Carlo Simulation
-def get_monte_carlo(yearly_df, temp="tmax"):
+def monte_carlo_simulation(yearly_df, temp="tmax"):
 	if temp == "tmax":
 		temperatures = yearly_df["Max. Temperature"]
 	elif temp == "tmin":
@@ -27,6 +24,8 @@ def get_monte_carlo(yearly_df, temp="tmax"):
 	
 	linreg_mae = mean_absolute_error(temperatures.values, y)
 	
+	fig = plt.figure(figsize=(12, 6))
+	
 	for i in range(50):
 		X_sim = [year for year in range(yearly_df.index[-1].year + 1, 2101)]
 		y_sim = linreg.predict(np.array(X_sim).reshape(-1, 1))
@@ -37,6 +36,15 @@ def get_monte_carlo(yearly_df, temp="tmax"):
 		y_sim.insert(0, temperatures.values[-1])
 		plt.plot(X_sim, y_sim, "grey")
 		
-	plt.plot(X_line, y_line, color="red")
-	plt.plot(yearly_df.index.year, temperatures.values)
-	plt.show()
+	plt.plot(yearly_df.index.year, temperatures.values, label="Original")
+	plt.plot(X_sim, y_sim, "grey", label="Simulaciones")
+	plt.plot(X_line, y_line, color="red", label="Tendencia")
+	plt.ylabel("Temperatura (°K)")
+	if temp == "tmax":
+		plt.title("Simulación de Monte Carlo para Temperatura Máxima")
+	elif temp == "tmin":
+		plt.title("Simulación de Monte Carlo para Temperatura Mínima")
+	plt.legend()
+	plt.xlabel("Año")
+	
+	return fig

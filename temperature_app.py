@@ -1,6 +1,6 @@
 import pandas as pd
 import seaborn as sns
-sns.set_style("darkgrid")
+sns.set_style("white")
 import streamlit as st
 from get_daily_summaries import download_data, data_exists, insert_into_psql
 from psql_config import psql_params
@@ -9,6 +9,7 @@ import SessionState
 import plotly.express as px
 from statsmodels.tsa.ar_model import AutoReg
 from sklearn.metrics import mean_absolute_error
+from monte_carlo import monte_carlo_simulation
 
 
 html_header = """
@@ -69,11 +70,11 @@ def get_graphics(city, country):
 	monthly_df = df.groupby(pd.Grouper(freq="M")).mean()
 	
 	fig1 = px.line(monthly_df["Max. Temperature"],
-				   title="Promedio de temperatura máxima mensual:",
+				   title="Temperatura Máxima:",
 				   labels={"value": "Temperatura (°K)", "Date": "Año"})
 	st.write(fig1)
 	fig2 = px.line(monthly_df["Min. Temperature"],
-				   title="Promedio de temperatura mínima mensual:",
+				   title="Temperatura Mínima:",
 				   labels={"value": "Temperatura (°K)", "Date": "Año"})
 	st.write(fig2)
 	
@@ -83,11 +84,11 @@ def get_graphics(city, country):
 	
 	yearly_df = df.groupby(pd.Grouper(freq="Y")).mean()
 	fig3 = px.line(yearly_df["Max. Temperature"],
-				   title="Promedio de temperatura máxima anual:",
+				   title="Temperatura Máxima:",
 				   labels={"value": "Temperatura (°K)", "Date": "Año"})
 	st.write(fig3)
 	fig4 = px.line(yearly_df["Min. Temperature"],
-				   title="Promedio de temperatura mínima anual:",
+				   title="Temperatura Mínima:",
 				   labels={"value": "Temperatura (°K)", "Date": "Año"})
 	st.write(fig4)
 	
@@ -107,8 +108,37 @@ def get_graphics(city, country):
 	
 	st.write("Entrenamos un modelo de Regresión Lineal para la temperatura máxima mensual, "
 			 "y obtenemos la siguiente tendencia:")
+	st.write("Temperatura Máxima:")
 	reg_fig1 = px.scatter(yearly_df["Max. Temperature"], trendline="ols")
 	st.write(reg_fig1)
+	
+	## tmin
+	st.write("Temperatura Mínima:")
+	reg_fig2 = px.scatter(yearly_df["Min. Temperature"], trendline="ols")
+	st.write(reg_fig2)
+	
+	# Monte Carlo
+	monte_carlo_title1 = """<h4 style="text-align:left;">Simulación de Monte Carlo</h4>"""
+	st.markdown(monte_carlo_title1, unsafe_allow_html=True)
+	
+	## tmax
+	st.write("Ahora que sabemos la tendencia de la temperatura, podemos hacer una simulación de "
+			 "Monte Carlo:.")
+	
+	st.write("Temperatura Máxima:")
+	monte_carlo_fig1 = monte_carlo_simulation(yearly_df, temp="tmax")
+	st.write(monte_carlo_fig1)
+	
+	## tmax
+	st.write("Temperatura Mínima:")
+	
+	monte_carlo_fig2 = monte_carlo_simulation(yearly_df, temp="tmin")
+	st.write(monte_carlo_fig2)
+	
+	# Time Series
+	time_series_title1 = """<h4 style="text-align:left;">Series de Tiempo</h4>"""
+	st.markdown(time_series_title1, unsafe_allow_html=True)
+	st.write("Entrenamos un modelo de Series de Tiempo y obtenemos lo siguiente:")
 	
 	tmax_model = AutoReg(monthly_df["tmax_diff"], lags=12)
 	tmax_model_fit = tmax_model.fit()
@@ -116,68 +146,43 @@ def get_graphics(city, country):
 	tmax_res_fig = px.scatter(tmax_residuals,
 							  labels={"value": "Temperatura (°K)", "Date": "Año"})
 	
-	# Quasi-Monte Carlo
-	monte_carlo_title1 = """<h4 style="text-align:left;">Simulación Quasi-Monte Carlo</h4>"""
-	st.markdown(monte_carlo_title1, unsafe_allow_html=True)
-	
-	st.write("Ahora que sabemos la tendencia de la temperatura, podemos hacer una simulación de "
-			 "Quasi-Monte Carlo.")
-	
-	
-	
-
-
-
-
-
-	#
-	time_series_title1 = """<h4 style="text-align:left;">Series de Tiempo</h4>"""
-	st.markdown(time_series_title1, unsafe_allow_html=True)
-	st.write("Ahora, entrenamos un modelo de Series de Tiempo para la temperatura máxima mensual, "
-			 "y obtenemos los siguientes residuales:")
-	st.write(tmax_res_fig)
-	
 	tmax_resid = tmax_model_fit.predict().dropna()
 	ma_tmax_predictions = monthly_df["tmax_lag"].iloc[12:] + tmax_resid
 	tmax_mae = mean_absolute_error(monthly_df["Max. Temperature"].iloc[12:], ma_tmax_predictions)
-	st.write(f"Promedio de Error Absoluto Mensual:", round(tmax_mae, 2))
 	
-	st.write("Predicción Anual en el conjunto de entrenamiento:")
 	yearly_df = monthly_df.iloc[12:].groupby(pd.Grouper(freq="Y")).mean()
 	ma_tmax_yearly_prediction = ma_tmax_predictions.groupby(pd.Grouper(freq="Y")).mean()
 	tmax_pred_df = pd.concat([yearly_df["Max. Temperature"], ma_tmax_yearly_prediction], axis=1)
-	tmax_pred_df.columns = ["Original", "Predicción"]
+	tmax_pred_df.columns = ["Original", "Entrenamiento"]
 	tmax_pred_fig = px.line(tmax_pred_df,
 							labels={"value": "Temperatura (°K)", "index": "Año"})
-	st.write(tmax_pred_fig)
-	
-	## tmin
-	st.write("Entrenamos un modelo de Regresión Lineal para la temperatura mínima mensual, "
-			 "y obtenemos la siguiente tendencia:")
-	reg_fig2 = px.scatter(yearly_df["Min. Temperature"], trendline="ols")
-	st.write(reg_fig2)
 	
 	tmin_model = AutoReg(monthly_df["tmin_diff"], lags=12)
 	tmin_model_fit = tmin_model.fit()
 	tmin_residuals = tmin_model_fit.resid
 	tmin_res_fig = px.scatter(tmin_residuals,
 							  labels={"value": "Temperatura (°K)", "Date": "Año"})
-	st.write("Ahora, entrenamos un modelo de Series de Tiempo para la temperatura mínima mensual, "
-			 "y obtenemos los siguientes residuales:")
-	st.write(tmin_res_fig)
 	
 	tmin_resid = tmin_model_fit.predict().dropna()
 	ma_tmin_predictions = monthly_df["tmin_lag"].iloc[12:] + tmin_resid
 	tmin_mae = mean_absolute_error(monthly_df["Min. Temperature"].iloc[12:], ma_tmin_predictions)
-	st.write(f"Promedio de Error Absoluto Mensual:", round(tmin_mae, 2))
 	
-	st.write("Predicción Anual en el conjunto de entrenamiento:")
 	yearly_df = monthly_df.iloc[12:].groupby(pd.Grouper(freq="Y")).mean()
 	ma_tmin_yearly_prediction = ma_tmin_predictions.groupby(pd.Grouper(freq="Y")).mean()
 	tmin_pred_df = pd.concat([yearly_df["Min. Temperature"], ma_tmin_yearly_prediction], axis=1)
-	tmin_pred_df.columns = ["Original", "Predicción"]
+	tmin_pred_df.columns = ["Original", "Entrenamiento"]
 	tmin_pred_fig = px.line(tmin_pred_df,
 							labels={"value": "Temperatura (°K)", "index": "Año"})
+	
+	st.write("Residuales de Temperatura Máxima:")
+	st.write(tmax_res_fig)
+	st.write(f"Promedio de Error Absoluto Mensual:", round(tmax_mae, 2))
+	st.write("Residuales de Temperatura Mínima:")
+	st.write(tmin_res_fig)
+	st.write(f"Promedio de Error Absoluto Mensual:", round(tmin_mae, 2))
+	st.write("Entrenamiento de Temperatura Máxima:")
+	st.write(tmax_pred_fig)
+	st.write("Entrenamiento de Temperatura Mínima:")
 	st.write(tmin_pred_fig)
 	
 obtener_btn = st.empty()
