@@ -41,7 +41,9 @@ def get_graphics(city, country):
 	# PSQL
 	conn = psycopg2.connect(**psql_params)
 	curr = conn.cursor()
-	curr.execute("""SELECT * FROM temperatures""")
+	curr.execute("SELECT city_id FROM cities WHERE city = %s AND country = %s", (city, country))
+	city_id = curr.fetchall()[0][0]
+	curr.execute("SELECT * FROM temperatures where city_id = %s", (city_id,))
 	df = pd.DataFrame(curr.fetchall())[[3, 4, 5]]
 	df.columns = ["Date", "Max. Temperature", "Min. Temperature"]
 	df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
@@ -93,13 +95,16 @@ def get_graphics(city, country):
 	html_title4 = """<h3 style="text-align:center;">Apendizaje Automático</h3>"""
 	st.markdown(html_title4, unsafe_allow_html=True)
 	
+	# Linear Regression
+	linreg_title1 = """<h4 style="text-align:left;">Regresión Lineal</h4>"""
+	st.markdown(linreg_title1, unsafe_allow_html=True)
+	
 	monthly_df["tmax_diff"] = monthly_df["Max. Temperature"].diff(1)
 	monthly_df["tmax_lag"] = monthly_df["Max. Temperature"].shift(1)
 	monthly_df["tmin_diff"] = monthly_df["Min. Temperature"].diff(1)
 	monthly_df["tmin_lag"] = monthly_df["Min. Temperature"].shift(1)
 	monthly_df.dropna(inplace=True)
 	
-	## tmax
 	st.write("Entrenamos un modelo de Regresión Lineal para la temperatura máxima mensual, "
 			 "y obtenemos la siguiente tendencia:")
 	reg_fig1 = px.scatter(yearly_df["Max. Temperature"], trendline="ols")
@@ -110,6 +115,24 @@ def get_graphics(city, country):
 	tmax_residuals = tmax_model_fit.resid
 	tmax_res_fig = px.scatter(tmax_residuals,
 							  labels={"value": "Temperatura (°K)", "Date": "Año"})
+	
+	# Quasi-Monte Carlo
+	monte_carlo_title1 = """<h4 style="text-align:left;">Simulación Quasi-Monte Carlo</h4>"""
+	st.markdown(monte_carlo_title1, unsafe_allow_html=True)
+	
+	st.write("Ahora que sabemos la tendencia de la temperatura, podemos hacer una simulación de "
+			 "Quasi-Monte Carlo.")
+	
+	
+	
+
+
+
+
+
+	#
+	time_series_title1 = """<h4 style="text-align:left;">Series de Tiempo</h4>"""
+	st.markdown(time_series_title1, unsafe_allow_html=True)
 	st.write("Ahora, entrenamos un modelo de Series de Tiempo para la temperatura máxima mensual, "
 			 "y obtenemos los siguientes residuales:")
 	st.write(tmax_res_fig)
