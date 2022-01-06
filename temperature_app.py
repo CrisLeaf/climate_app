@@ -44,7 +44,15 @@ def get_graphics(city, country):
 	city_id = curr.fetchall()[0][0]
 	curr.execute("SELECT * FROM temperatures where city_id = %s", (city_id,))
 	df = pd.DataFrame(curr.fetchall())[[3, 4, 5]]
+	conn.commit()
+	curr.close()
+	conn.close()
+	
 	df.columns = ["Date", "Max. Temperature", "Min. Temperature"]
+	n_filas = df.shape[0]
+	missing_values = df.isna().sum().sum()
+	missing_values += len(df[df["Max. Temperature"] == 0])
+	missing_values += len(df[df["Min. Temperature"] == 0])
 	df.dropna(inplace=True)
 	df.drop(index=df[df["Max. Temperature"] == 0].index, inplace=True)
 	df.drop(index=df[df["Min. Temperature"] == 0].index, inplace=True)
@@ -52,9 +60,6 @@ def get_graphics(city, country):
 	df.set_index("Date", inplace=True)
 	df["Max. Temperature"] = df["Max. Temperature"].apply(lambda x: int(x))
 	df["Min. Temperature"] = df["Min. Temperature"].apply(lambda x: int(x))
-	conn.commit()
-	curr.close()
-	conn.close()
 	
 	# Diaria
 	html_title1 = """<h3 style="text-align:center;">Temperatura diaria</h3>"""
@@ -63,7 +68,16 @@ def get_graphics(city, country):
 	st.write(df.head(5))
 	st.write(f"Últimos datos ingresados en {city.capitalize()}, {country.capitalize()}:")
 	st.write(df.tail(5))
-	st.write(f"Número total de filas:", df.shape[0])
+	st.write(f"Número total de filas:", n_filas, ". Número de datos (celdas) faltantes",
+			 missing_values, ".")
+	
+	if missing_values / (n_filas * 2) >= 0.05:
+		st.warning(f"Warning: Los datos faltantes representan el "
+				   f"{missing_values / (n_filas * 2):.0%}. Lo que puede significar la obtención "
+				   f"de resultados erróneos.")
+	elif n_filas < 3650:
+		st.warning(f"Los datos no alcanzan a completar un periodo de 10 años. Lo que "
+				   f"puede significar en la obtención de resultados erróneos.")
 	
 	# Mensual
 	html_title2 = """<h3 style="text-align:center;">Temperatura Promedio Mensual</h3>"""
@@ -72,11 +86,11 @@ def get_graphics(city, country):
 	
 	fig1 = px.line(monthly_df["Max. Temperature"],
 				   title="Temperatura Máxima:",
-				   labels={"value": "Temperatura (°K)", "Date": "Año"})
+				   labels={"value": "Temperatura (°F)", "Date": "Año"})
 	st.write(fig1)
 	fig2 = px.line(monthly_df["Min. Temperature"],
 				   title="Temperatura Mínima:",
-				   labels={"value": "Temperatura (°K)", "Date": "Año"})
+				   labels={"value": "Temperatura (°F)", "Date": "Año"})
 	st.write(fig2)
 	
 	# Anual
@@ -86,11 +100,11 @@ def get_graphics(city, country):
 	yearly_df = df.groupby(pd.Grouper(freq="Y")).mean()
 	fig3 = px.line(yearly_df["Max. Temperature"],
 				   title="Temperatura Máxima:",
-				   labels={"value": "Temperatura (°K)", "Date": "Año"})
+				   labels={"value": "Temperatura (°F)", "Date": "Año"})
 	st.write(fig3)
 	fig4 = px.line(yearly_df["Min. Temperature"],
 				   title="Temperatura Mínima:",
-				   labels={"value": "Temperatura (°K)", "Date": "Año"})
+				   labels={"value": "Temperatura (°F)", "Date": "Año"})
 	st.write(fig4)
 	
 	# Predicciones
@@ -110,12 +124,14 @@ def get_graphics(city, country):
 	st.write("Entrenamos un modelo de Regresión Lineal para la temperatura máxima mensual, "
 			 "y obtenemos la siguiente tendencia:")
 	st.write("Temperatura Máxima:")
-	reg_fig1 = px.scatter(yearly_df["Max. Temperature"], trendline="ols")
+	reg_fig1 = px.scatter(yearly_df["Max. Temperature"], trendline="ols",
+						  labels={"value": "Temperatura (°F)", "Date": "Año"})
 	st.write(reg_fig1)
 	
 	## tmin
 	st.write("Temperatura Mínima:")
-	reg_fig2 = px.scatter(yearly_df["Min. Temperature"], trendline="ols")
+	reg_fig2 = px.scatter(yearly_df["Min. Temperature"], trendline="ols",
+						  labels={"value": "Temperatura (°F)", "Date": "Año"})
 	st.write(reg_fig2)
 	
 	# Monte Carlo
@@ -142,10 +158,11 @@ def get_graphics(city, country):
 	st.write("Entrenamos un modelo de Series de Tiempo y obtenemos lo siguiente:")
 	
 	tmax_model = AutoReg(monthly_df["tmax_diff"], lags=12)
+	
 	tmax_model_fit = tmax_model.fit()
 	tmax_residuals = tmax_model_fit.resid
 	tmax_res_fig = px.scatter(tmax_residuals,
-							  labels={"value": "Temperatura (°K)", "Date": "Año"})
+							  labels={"value": "Temperatura (°F)", "Date": "Año"})
 	
 	tmax_resid = tmax_model_fit.predict().dropna()
 	ma_tmax_predictions = monthly_df["tmax_lag"].iloc[12:] + tmax_resid
@@ -156,13 +173,13 @@ def get_graphics(city, country):
 	tmax_pred_df = pd.concat([yearly_df["Max. Temperature"], ma_tmax_yearly_prediction], axis=1)
 	tmax_pred_df.columns = ["Original", "Entrenamiento"]
 	tmax_pred_fig = px.line(tmax_pred_df,
-							labels={"value": "Temperatura (°K)", "index": "Año"})
+							labels={"value": "Temperatura (°F)", "index": "Año"})
 	
 	tmin_model = AutoReg(monthly_df["tmin_diff"], lags=12)
 	tmin_model_fit = tmin_model.fit()
 	tmin_residuals = tmin_model_fit.resid
 	tmin_res_fig = px.scatter(tmin_residuals,
-							  labels={"value": "Temperatura (°K)", "Date": "Año"})
+							  labels={"value": "Temperatura (°F)", "Date": "Año"})
 	
 	tmin_resid = tmin_model_fit.predict().dropna()
 	ma_tmin_predictions = monthly_df["tmin_lag"].iloc[12:] + tmin_resid
@@ -173,7 +190,7 @@ def get_graphics(city, country):
 	tmin_pred_df = pd.concat([yearly_df["Min. Temperature"], ma_tmin_yearly_prediction], axis=1)
 	tmin_pred_df.columns = ["Original", "Entrenamiento"]
 	tmin_pred_fig = px.line(tmin_pred_df,
-							labels={"value": "Temperatura (°K)", "index": "Año"})
+							labels={"value": "Temperatura (°F)", "index": "Año"})
 	
 	st.write("Residuales de Temperatura Máxima:")
 	st.write(tmax_res_fig)
