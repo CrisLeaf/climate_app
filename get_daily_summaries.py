@@ -36,11 +36,11 @@ def download_data(city, country):
 		return None
 	params = {
 		"dataset_name": "daily-summaries",
-		"data_types": "TMAX, TMIN",
+		"data_types": "TMAX,TMIN",
 		"stations": station,
-		"start_date_time": "1800-12-20",
+		"start_date_time": "1800-01-01",
 		"end_date_time": "2030-12-31",
-		"location": "90,-180,-90,180"
+		"location": str(north) + "," + str(west) + "," + str(south) + "," + str(east)
 	}
 	ncei_data = NCEIData(**params)
 	data = ncei_data.get_data()
