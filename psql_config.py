@@ -10,9 +10,9 @@ import streamlit as st
 # }
 
 psql_params = {
-	"host": st.secrets("db_host"),
-	"port": st.secrets("db_port"),
-	"user": st.secrets("db_user"),
-	"password": st.secrets("db_pass"),
-	"database": st.secrets("db_name"),
+	"host": st.secrets["db_host"],
+	"port": st.secrets["db_port"],
+	"user": st.secrets["db_user"],
+	"password": st.secrets["db_pass"],
+	"database": st.secrets["db_name"],
 }
