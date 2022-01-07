@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 from get_daily_summaries import download_data, data_exists, insert_into_psql
-# from psql_config import psql_params
+from psql_config import psql_params
 import psycopg2
 import SessionState
 import plotly.express as px
@@ -9,12 +9,12 @@ from statsmodels.tsa.ar_model import AutoReg
 from sklearn.metrics import mean_absolute_error
 from monte_carlo import monte_carlo_simulation
 from psql_create_tables import create_tables
+from sqlalchemy import create_engine
 
 
 def get_graphics(city, country):
 	# PSQL
-	# conn = psycopg2.connect(**psql_params)
-	conn = psycopg2.connect(**st.secrets["postgres"])
+	conn = psycopg2.connect(**psql_params)
 	curr = conn.cursor()
 	curr.execute("SELECT city_id FROM cities WHERE city = %s AND country = %s", (city, country))
 	city_id = curr.fetchall()[0][0]
@@ -182,6 +182,8 @@ def get_graphics(city, country):
 	st.write(tmin_pred_fig)
 
 def main():
+	# engine = create_engine("postgresql://<username>:<password>@localhost:5432/<database name>")
+	
 	create_tables()
 	
 	html_header = """
