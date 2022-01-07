@@ -57,7 +57,9 @@ def get_graphics(city, country):
 	df.drop(index=df[df["Max. Temperature"] == 0].index, inplace=True)
 	df.drop(index=df[df["Min. Temperature"] == 0].index, inplace=True)
 	df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+	df.sort_values(by="Date", inplace=True)
 	df.set_index("Date", inplace=True)
+	
 	df["Max. Temperature"] = df["Max. Temperature"].apply(lambda x: int(x))
 	df["Min. Temperature"] = df["Min. Temperature"].apply(lambda x: int(x))
 	
@@ -73,8 +75,8 @@ def get_graphics(city, country):
 	
 	if missing_values / (n_filas * 2) >= 0.05:
 		st.warning(f"Warning: Los datos faltantes representan el "
-				   f"{missing_values / (n_filas * 2):.0%}. Lo que puede significar la obtención "
-				   f"de resultados erróneos.")
+				   f"{missing_values / (n_filas * 2):.0%} de fechas incompletas. Lo que puede "
+				   f"significar la obtención de resultados erróneos.")
 	elif n_filas < 3650:
 		st.warning(f"Los datos no alcanzan a completar un periodo de 10 años. Lo que "
 				   f"puede significar en la obtención de resultados erróneos.")
