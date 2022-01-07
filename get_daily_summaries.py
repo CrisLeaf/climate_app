@@ -1,46 +1,19 @@
 import pandas as pd
 from ncei_api import NCEIData
-from selenium import webdriver
-import re
-import time
 import psycopg2
 from psql_config import psql_params
+from stations import get_stations
 
 
 def download_data(city, country):
-	cities_df = pd.read_csv("worldcities.csv")[["city", "country", "lat", "lng"]]
-	cities_df["city"] = cities_df["city"].apply(lambda x: x.lower())
-	cities_df["country"] = cities_df["country"].apply(lambda x: x.lower())
-	cities_df2 = cities_df[cities_df["country"] == country]
-	coordinates = cities_df2[cities_df2["city"] == city][["city", "country", "lat", "lng"]]
-	
-	try:
-		north = round(coordinates["lat"].values[0] + 0.5, 3)
-		south = round(coordinates["lat"].values[0] - 0.5, 3)
-		east = round(coordinates["lng"].values[0] + 0.5, 3)
-		west = round(coordinates["lng"].values[0] - 0.5, 3)
-		query_url = "https://www.ncei.noaa.gov/access/search/data-search/daily-summaries?bbox=" + \
-					str(north) + "," + str(west) + "," + str(south) + "," + str(east)
-	except:
-		return
-	
-	browser = webdriver.Firefox()
-	browser.get(query_url)
-	time.sleep(2)
-	html = browser.page_source
-	browser.close()
-	try:
-		station = re.findall(r"[A-Z]*[0-9]*.csv", html)[0]
-		station = re.findall(r"[A-Z]*[0-9]*", station)[0]
-	except:
-		return None
+	stations = get_stations(city, country)
 	params = {
 		"dataset_name": "daily-summaries",
 		"data_types": "TMAX,TMIN",
-		"stations": station,
+		"stations": stations,
 		"start_date_time": "1800-01-01",
 		"end_date_time": "2030-12-31",
-		"location": str(north) + "," + str(west) + "," + str(south) + "," + str(east)
+		"location": "90,-180,-90,180"
 	}
 	ncei_data = NCEIData(**params)
 	data = ncei_data.get_data()

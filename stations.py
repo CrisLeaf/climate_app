@@ -17,9 +17,7 @@ def get_stations(city, country):
 			latitude_diff = abs(float(lines[i][57:64]) - coordinates["lat"].values[0])
 			longitude_diff = abs(float(lines[i][65:73]) - coordinates["lng"].values[0])
 			if latitude_diff < 0.5 and longitude_diff < 0.5:
-				print(lines[i])
 				print(f"station: {lines[i][:7]}")
-				print(f"asdf: {lines[i][43:45]}")
 				stations.append(lines[i][43:45] + "000" + lines[i][:6])
 				stations.append(lines[i][43:45] + "M00" + lines[i][:6])
 				stations.append(lines[i][43:45] + "W00" + lines[i][:6])
