@@ -39,7 +39,8 @@ country = st.text_input("País:", placeholder="Ingrese el país... (ex: United S
 
 def get_graphics(city, country):
 	# PSQL
-	conn = psycopg2.connect(**psql_params)
+	# conn = psycopg2.connect(**psql_params)
+	conn = psycopg2.connect(**st.secrets["postgres"])
 	curr = conn.cursor()
 	curr.execute("SELECT city_id FROM cities WHERE city = %s AND country = %s", (city, country))
 	city_id = curr.fetchall()[0][0]

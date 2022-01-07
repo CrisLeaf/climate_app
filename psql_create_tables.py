@@ -1,7 +1,9 @@
 import psycopg2
 from psql_config import psql_params
+import streamlit as st
 
 
+@st.cache(allow_output_mutation=True, hash_funcs={"_thread.RLock": lambda _: None})
 def create_tables():
 	commands = (
 		"""
@@ -27,7 +29,9 @@ def create_tables():
 	)
 	
 	conn = psycopg2.connect(**psql_params)
+	# conn = psycopg2.connect(**st.secrets["postgres"])
 	curr = conn.cursor()
+	
 	
 	for command in commands:
 		curr.execute(command)
