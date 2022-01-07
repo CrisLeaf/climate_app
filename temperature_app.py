@@ -8,34 +8,8 @@ import plotly.express as px
 from statsmodels.tsa.ar_model import AutoReg
 from sklearn.metrics import mean_absolute_error
 from monte_carlo import monte_carlo_simulation
-from psql_create_tables import create_tables
+from psql_create_tables import create_tables, create_database
 
-
-create_tables()
-
-html_header = """
-	<head>
-	<link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-	</head>
-	<a href="https://crisleaf.github.io/apps.html">
-		<i class="fas fa-arrow-left"></i>
-	</a>
-	<h2 style="text-align:center;">Simulador de Temperaturas</h2>
-	<style>
-		i {
-			font-size: 30px;
-			color: #222;
-		}
-		i:hover {
-			color: cornflowerblue;
-			transition: color 0.3s ease;
-		}
-	</style>
-"""
-st.markdown(html_header, unsafe_allow_html=True)
-
-city = st.text_input("Ciudad:", placeholder="Ingrese la ciudad... (ex: New York)").lower()
-country = st.text_input("País:", placeholder="Ingrese el país... (ex: United States)").lower()
 
 def get_graphics(city, country):
 	# PSQL
@@ -206,38 +180,42 @@ def get_graphics(city, country):
 	st.write(tmax_pred_fig)
 	st.write("Entrenamiento de Temperatura Mínima:")
 	st.write(tmin_pred_fig)
-	
-obtener_btn = st.empty()
-ss = SessionState.get(obtener_btn=False)
 
-if obtener_btn.button("Obtener"):
-	ss.obtener_btn = True
+def main():
+	create_tables()
 	
-	if data_exists(city, country):
-		try:
-			get_graphics(city, country)
-		except:
-			st.error(f"Ha habido un error al procesar los datos de {city.capitalize()}, "
-					 f"{country.capitalize()}. Las posibles causas son: Los datos no están "
-					 f"disponibles, están incompletos o son incoherentes.")
-		more_info_html = """
-			<a class="aqui" href="https://github.com/CrisLeaf/ny_is_burning/blob/master/temperature_analysis.ipynb">
-			Más información
-			</a>
-		"""
-		st.markdown(more_info_html, unsafe_allow_html=True)
-	else:
-		st.write("Obteniendo datos...")
-		new_data = download_data(city, country)
-		if new_data is None:
-			st.error(
-				f"{city.capitalize()}, {country.capitalize()} no se encuentra disponible. "
-				f"Para más información visite "
-				f"https://www.ncei.noaa.gov/access/search/dataset-search?text=daily%20summaries"
-			)
-		else:
+	html_header = """
+		<head>
+		<link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+		</head>
+		<a href="https://crisleaf.github.io/apps.html">
+			<i class="fas fa-arrow-left"></i>
+		</a>
+		<h2 style="text-align:center;">Simulador de Temperaturas</h2>
+		<style>
+			i {
+				font-size: 30px;
+				color: #222;
+			}
+			i:hover {
+				color: cornflowerblue;
+				transition: color 0.3s ease;
+			}
+		</style>
+	"""
+	st.markdown(html_header, unsafe_allow_html=True)
+	
+	city = st.text_input("Ciudad:", placeholder="Ingrese la ciudad... (ex: New York)").lower()
+	country = st.text_input("País:", placeholder="Ingrese el país... (ex: United States)").lower()
+	
+	obtener_btn = st.empty()
+	ss = SessionState.get(obtener_btn=False)
+	
+	if obtener_btn.button("Obtener"):
+		ss.obtener_btn = True
+		
+		if data_exists(city, country):
 			try:
-				insert_into_psql(city, country, new_data)
 				get_graphics(city, country)
 			except:
 				st.error(f"Ha habido un error al procesar los datos de {city.capitalize()}, "
@@ -249,15 +227,41 @@ if obtener_btn.button("Obtener"):
 				</a>
 			"""
 			st.markdown(more_info_html, unsafe_allow_html=True)
-
-html_source_code = """
-	<p class="source-code">Código Fuente:
-	<a href="https://github.com/CrisLeaf/temperature_app">
-	<i class="fab fa-github"></i></a></p>
-	<style>
-		.source-code {
-			text-align: right;
-		}
-	</style>
-"""
-st.markdown(html_source_code, unsafe_allow_html=True)
+		else:
+			st.write("Obteniendo datos...")
+			new_data = download_data(city, country)
+			if new_data is None:
+				st.error(
+					f"{city.capitalize()}, {country.capitalize()} no se encuentra disponible. "
+					f"Para más información visite "
+					f"https://www.ncei.noaa.gov/access/search/dataset-search?text=daily%20summaries"
+				)
+			else:
+				try:
+					insert_into_psql(city, country, new_data)
+					get_graphics(city, country)
+				except:
+					st.error(f"Ha habido un error al procesar los datos de {city.capitalize()}, "
+							 f"{country.capitalize()}. Las posibles causas son: Los datos no están "
+							 f"disponibles, están incompletos o son incoherentes.")
+				more_info_html = """
+					<a class="aqui" href="https://github.com/CrisLeaf/ny_is_burning/blob/master/temperature_analysis.ipynb">
+					Más información
+					</a>
+				"""
+				st.markdown(more_info_html, unsafe_allow_html=True)
+	
+	html_source_code = """
+		<p class="source-code">Código Fuente:
+		<a href="https://github.com/CrisLeaf/temperature_app">
+		<i class="fab fa-github"></i></a></p>
+		<style>
+			.source-code {
+				text-align: right;
+			}
+		</style>
+	"""
+	st.markdown(html_source_code, unsafe_allow_html=True)
+	
+if __name__ == "__main__":
+    main()

@@ -1,5 +1,5 @@
 import psycopg2
-# from psql_config import psql_params
+from psql_config import psql_params
 import streamlit as st
 
 
@@ -35,7 +35,7 @@ def create_tables():
 	for command in commands:
 		curr.execute(command)
 	
-	print("Base de datos creada!")
+	print("Tablas creadas!")
 	
 	conn.commit()
 	curr.close()
