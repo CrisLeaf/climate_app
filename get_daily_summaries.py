@@ -3,7 +3,7 @@ from ncei_api import NCEIData
 import psycopg2
 # from psql_config import psql_params
 from stations import get_stations
-from streamlit import st
+import streamlit as st
 
 
 def download_data(city, country):
