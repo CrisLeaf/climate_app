@@ -3,7 +3,7 @@ import psycopg2
 import streamlit as st
 
 
-@st.cache(allow_output_mutation=True, hash_funcs={"_thread.RLock": lambda _: None})
+@st.cache
 def create_tables():
 	commands = (
 		"""
