@@ -13,20 +13,43 @@ def get_stations(city, country):
 	
 	stations = []
 	for i in range(2, len(lines)):
-		try:
-			latitude_diff = abs(float(lines[i][57:64]) - coordinates["lat"].values[0])
-			longitude_diff = abs(float(lines[i][65:73]) - coordinates["lng"].values[0])
-			if latitude_diff < 0.5 and longitude_diff < 0.5:
-				print(f"station: {lines[i][:7]}")
-				stations.append(lines[i][43:45] + "000" + lines[i][:6])
-				stations.append(lines[i][43:45] + "M00" + lines[i][:6])
-				stations.append(lines[i][43:45] + "W00" + lines[i][:6])
-				stations.append(lines[i][43:45] + "0000" + lines[i][:5])
-				stations.append(lines[i][43:45] + "M000" + lines[i][:5])
-				stations.append(lines[i][43:45] + "W000" + lines[i][:5])
-		except:
-			pass
-	
-	stations = ",".join(stations)
+		if i >= 28_221:
+			try:
+				latitude_diff = abs(float(lines[i][57:64]) - coordinates["lat"].values[0])
+				longitude_diff = abs(float(lines[i][65:73]) - coordinates["lng"].values[0])
+				if latitude_diff < 0.5 and longitude_diff < 0.1:
+					stations.append(lines[i][43:45] + "000" + lines[i][7:12])
+					stations.append(lines[i][43:45] + "M00" + lines[i][7:12])
+					stations.append(lines[i][43:45] + "W00" + lines[i][7:12])
+					stations.append(lines[i][43:45] + "0000" + lines[i][7:12])
+					stations.append(lines[i][43:45] + "M000" + lines[i][7:12])
+					stations.append(lines[i][43:45] + "W000" + lines[i][7:12])
+					stations.append(lines[i][43:45] + "000" + lines[i][7:11])
+					stations.append(lines[i][43:45] + "M00" + lines[i][7:11])
+					stations.append(lines[i][43:45] + "W00" + lines[i][7:11])
+					stations.append(lines[i][43:45] + "0000" + lines[i][7:11])
+					stations.append(lines[i][43:45] + "M000" + lines[i][7:11])
+					stations.append(lines[i][43:45] + "W000" + lines[i][7:11])
+			except:
+				pass
+		else:
+			try:
+				latitude_diff = abs(float(lines[i][57:64]) - coordinates["lat"].values[0])
+				longitude_diff = abs(float(lines[i][65:73]) - coordinates["lng"].values[0])
+				if latitude_diff < 0.5 and longitude_diff < 0.1:
+					stations.append(lines[i][43:45] + "000" + lines[i][:6])
+					stations.append(lines[i][43:45] + "M00" + lines[i][:6])
+					stations.append(lines[i][43:45] + "W00" + lines[i][:6])
+					stations.append(lines[i][43:45] + "0000" + lines[i][:6])
+					stations.append(lines[i][43:45] + "M000" + lines[i][:6])
+					stations.append(lines[i][43:45] + "W000" + lines[i][:6])
+					stations.append(lines[i][43:45] + "000" + lines[i][:5])
+					stations.append(lines[i][43:45] + "M00" + lines[i][:5])
+					stations.append(lines[i][43:45] + "W00" + lines[i][:5])
+					stations.append(lines[i][43:45] + "0000" + lines[i][:5])
+					stations.append(lines[i][43:45] + "M000" + lines[i][:5])
+					stations.append(lines[i][43:45] + "W000" + lines[i][:5])
+			except:
+				pass
 	
 	return stations

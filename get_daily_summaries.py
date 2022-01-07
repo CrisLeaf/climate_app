@@ -7,17 +7,22 @@ from stations import get_stations
 
 def download_data(city, country):
 	stations = get_stations(city, country)
-	params = {
-		"dataset_name": "daily-summaries",
-		"data_types": "TMAX,TMIN",
-		"stations": stations,
-		"start_date_time": "1800-01-01",
-		"end_date_time": "2030-12-31",
-		"location": "90,-180,-90,180"
-	}
-	ncei_data = NCEIData(**params)
-	data = ncei_data.get_data()
-	data_splited = data.split("\n")
+	for i in range(int(len(stations) / 50) + 1):
+		stations_divided = ",".join(stations[0 + i*50:50 + i*50])
+		print(stations_divided)
+		params = {
+			"dataset_name": "daily-summaries",
+			"data_types": "TMAX,TMIN",
+			"stations": stations_divided,
+			"start_date_time": "1800-01-01",
+			"end_date_time": "2030-12-31",
+			"location": "90,-180,-90,180"
+		}
+		ncei_data = NCEIData(**params)
+		data = ncei_data.get_data()
+		data_splited = data.split("\n")
+		if len(data_splited) >= 10000:
+			break
 
 	return data_splited
 

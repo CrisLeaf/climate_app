@@ -39,7 +39,7 @@ def monte_carlo_simulation(yearly_df, temp="tmax"):
 	plt.plot(yearly_df.index.year, temperatures.values, label="Original")
 	plt.plot(X_sim, y_sim, "grey", label="Simulaciones")
 	plt.plot(X_line, y_line, color="red", label="Tendencia")
-	plt.ylabel("Temperatura (°K)")
+	plt.ylabel("Temperatura (°F)")
 	if temp == "tmax":
 		plt.title("Simulación de Monte Carlo para Temperatura Máxima")
 	elif temp == "tmin":
