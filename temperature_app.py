@@ -8,7 +8,10 @@ import plotly.express as px
 from statsmodels.tsa.ar_model import AutoReg
 from sklearn.metrics import mean_absolute_error
 from monte_carlo import monte_carlo_simulation
+from psql_create_tables import create_tables
 
+
+create_tables()
 
 html_header = """
 	<head>
