@@ -1,6 +1,4 @@
 import pandas as pd
-import seaborn as sns
-sns.set_style("white")
 import streamlit as st
 from get_daily_summaries import download_data, data_exists, insert_into_psql
 from psql_config import psql_params
