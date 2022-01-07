@@ -1,5 +1,5 @@
 import psycopg2
-from psql_config import psql_params
+# from psql_config import psql_params
 import streamlit as st
 
 
@@ -28,8 +28,8 @@ def create_tables():
 		"""
 	)
 	
-	conn = psycopg2.connect(**psql_params)
-	# conn = psycopg2.connect(**st.secrets["postgres"])
+	# conn = psycopg2.connect(**psql_params)
+	conn = psycopg2.connect(**st.secrets["postgres"])
 	curr = conn.cursor()
 	
 	

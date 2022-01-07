@@ -1,8 +1,9 @@
 import pandas as pd
 from ncei_api import NCEIData
 import psycopg2
-from psql_config import psql_params
+# from psql_config import psql_params
 from stations import get_stations
+from streamlit import st
 
 
 def download_data(city, country):
@@ -26,7 +27,8 @@ def download_data(city, country):
 	return data_splited
 
 def data_exists(city, country):
-	conn = psycopg2.connect(**psql_params)
+	# conn = psycopg2.connect(**psql_params)
+	conn = psycopg2.connect(st.secrets["postgres"])
 	curr = conn.cursor()
 	curr.execute("SELECT * FROM cities WHERE city = %s AND country = %s", (city, country))
 	result = curr.fetchall()
@@ -39,7 +41,8 @@ def data_exists(city, country):
 		return True
 
 def insert_into_psql(city, country, data):
-	conn = psycopg2.connect(**psql_params)
+	# conn = psycopg2.connect(**psql_params)
+	conn = psycopg2.connect(st.secrets["postgres"])
 	curr = conn.cursor()
 	
 	try:

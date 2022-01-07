@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 from get_daily_summaries import download_data, data_exists, insert_into_psql
-from psql_config import psql_params
+# from psql_config import psql_params
 import psycopg2
 import SessionState
 import plotly.express as px
