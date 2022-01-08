@@ -16,6 +16,30 @@ The program was written using a Python 3.9 environment, and the following librar
 - [Plotly](https://plotly.com/)
 - [NCEI API Service](https://www.ncei.noaa.gov/support/access-data-service-api-user-documentation)
 
+
+
+## How to install
+### Database
+
+The dataset is stored in a PostgreSQL database. Download it from the following
+[link](https://www.postgresql.org/download/), and create a database named "climatedb".
+
+###Application
+On terminal, run:
+```
+pip install -r requirements.txt
+```
+to install the requirements. Then run
+```
+python psql_create_tables.py
+```
+to create all tables.
+Finally run
+```
+streamlit run temperature_app.py 
+```
+
+
 ## How to use.
 
 Write the name of any city, and its country.
