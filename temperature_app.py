@@ -8,8 +8,6 @@ import plotly.express as px
 from statsmodels.tsa.ar_model import AutoReg
 from sklearn.metrics import mean_absolute_error
 from monte_carlo import monte_carlo_simulation
-from psql_create_tables import create_tables
-from sqlalchemy import create_engine
 
 
 def get_graphics(city, country):
@@ -182,11 +180,6 @@ def get_graphics(city, country):
 	st.write(tmin_pred_fig)
 	
 def main():
-	
-	
-	
-	create_tables()
-	
 	html_header = """
 		<head>
 		<link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
