@@ -180,9 +180,10 @@ def get_graphics(city, country):
 	st.write(tmax_pred_fig)
 	st.write("Entrenamiento de Temperatura Mínima:")
 	st.write(tmin_pred_fig)
-
+	
 def main():
-	# engine = create_engine("postgresql://<username>:<password>@localhost:5432/<database name>")
+	
+	engine = create_engine("postgresql://cris:asdf123@localhost:5432/climatedb")
 	
 	create_tables()
 	
