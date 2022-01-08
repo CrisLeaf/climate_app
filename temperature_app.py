@@ -183,7 +183,7 @@ def get_graphics(city, country):
 	
 def main():
 	
-	engine = create_engine("postgresql://cris:asdf123@localhost:5432/climatedb")
+	
 	
 	create_tables()
 	
